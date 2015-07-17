@@ -1,0 +1,123 @@
+{"numEntries": 100,"sampleValueFiles":[
+		{
+			"name": "zip_id",
+			"values": "",
+			"valueType": "INT"
+		},
+		{
+			"name": "listing_id",
+			"values": "",
+			"valueType": "INT"
+		},
+		{
+			"name": "photo_id",
+			"values": "",
+			"valueType": "INT"
+		},
+		{
+			"name": "prop_id",
+			"values": "",
+			"valueType": "INT"
+		},
+		{
+			"name": "user_id",
+			"values": "",
+			"valueType": "INT"
+		},
+		{
+			"name": "zip_code",
+			"values": "D:\\workspace\\ListingsGenerator\\zip_code.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "city",
+			"values": "D:\\workspace\\ListingsGenerator\\city.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "state",
+			"values": "D:\\workspace\\ListingsGenerator\\state.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "country",
+			"values": "D:\\workspace\\ListingsGenerator\\country.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "address",
+			"values": "D:\\workspace\\ListingsGenerator\\address.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "photo_name",
+			"values": "D:\\workspace\\ListingsGenerator\\photo_name.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "photo_path",
+			"values": "D:\\workspace\\ListingsGenerator\\photo_path.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "price",
+			"values": "D:\\workspace\\ListingsGenerator\\price.json",
+			"valueType": "DOUBLE"
+		},
+		{
+			"name": "size",
+			"values": "D:\\workspace\\ListingsGenerator\\size.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "bed",
+			"values": "D:\\workspace\\ListingsGenerator\\bed.json",
+			"valueType": "INT"
+		},
+		{
+			"name": "bath",
+			"values": "D:\\workspace\\ListingsGenerator\\bath.json",
+			"valueType": "INT"
+		},
+		{
+			"name": "description",
+			"values": "D:\\workspace\\ListingsGenerator\\description.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "type",
+			"values": "D:\\workspace\\ListingsGenerator\\type.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "fname",
+			"values": "D:\\workspace\\ListingsGenerator\\fname.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "lname",
+			"values": "D:\\workspace\\ListingsGenerator\\lname.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "dob",
+			"values": "D:\\workspace\\ListingsGenerator\\dob.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "gender",
+			"values": "D:\\workspace\\ListingsGenerator\\gender.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "contact",
+			"values": "D:\\workspace\\ListingsGenerator\\contact.json",
+			"valueType": "STRING"
+		},
+		{
+			"name": "email",
+			"values": "D:\\workspace\\ListingsGenerator\\email.json",
+			"valueType": "STRING"
+		}
+	]
+}
