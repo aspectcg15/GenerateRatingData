@@ -1,7 +1,9 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -10,6 +12,7 @@ import org.json.JSONException;
 
 import api.IRatingGenerator;
 import scala.Tuple2;
+import main.DBDispatcher.FullListingQuery;
 import models.Listing;
 import models.SampleValueList;
 import models.ValueType;
@@ -46,7 +49,7 @@ public class RatingGenerator implements IRatingGenerator{
 	}
 	
 	Random rdm;
-	//private List<Listing> listings;
+	protected Map<Integer, Listing> listings;
 	
 	public RatingGenerator(Long randomSeed){
 		rdm = new Random(randomSeed);
@@ -58,35 +61,12 @@ public class RatingGenerator implements IRatingGenerator{
 		return null;
 	}
 
-	public List<Rating> generateRatings(int userIndex, int numRatings) {
-		List<Rating> results = new ArrayList<Rating>(numRatings);
-		
-		int numFactors = generateNumFactors();
-		List<Function<Tuple2<Listing, Listing>, Boolean>> factors = selectFactors(numFactors);
-		
-		Listing preferredListing = generateListing(userIndex);
-		
-		int propertyId;
-		List<Integer> alreadyRatedProperties = new ArrayList<Integer>(numRatings);
-		int numSelected=0;
-		while( numSelected < numRatings){
-			propertyId = selectAPropertyId();
-			if(!alreadyRatedProperties.contains(propertyId)){
-				numSelected++;
-				alreadyRatedProperties.add(propertyId);
-				results.add(new Rating(userIndex, propertyId, calculateRating(getListing(propertyId), preferredListing, factors)));
-			}
-		}
-		
-		return results;
-	}
-
-	private int calculateRating(Listing listing, Listing preferredListing, List<Function<Tuple2<Listing, Listing>, Boolean>> factors) {
+	protected int calculateRating(Listing listing, Listing preferredListing, List<Function<Tuple2<Listing, Listing>, Boolean>> factors) {
 		int totalNumFactors = factors.size();
 		int numMatchingFactors = 0;
 		
 		for(Function<Tuple2<Listing, Listing>, Boolean> factor: factors){
-			if(factor.equals(new Tuple2<Listing, Listing>(listing, preferredListing))){
+			if(factor.apply(new Tuple2<Listing, Listing>(listing, preferredListing))){
 				numMatchingFactors++;
 			}
 		}
@@ -94,11 +74,7 @@ public class RatingGenerator implements IRatingGenerator{
 		return Math.round((numMatchingFactors/(float)totalNumFactors)*4)+1;
 	}
 
-	private Listing getListing(int propertyId) {
-		return DBDispatcher.getListing(propertyId);
-	}
-
-	private int selectAPropertyId() {
+	protected int selectAPropertyId() {
 		return rdm.nextInt(NUM_PROPERTIES);
 	}
 
@@ -205,4 +181,45 @@ public class RatingGenerator implements IRatingGenerator{
 		return rdm.nextInt(UPPER_BOUND_FOR_NUM_USER_FACTORS - LOWER_BOUND_FOR_NUM_USER_FACTORS)+LOWER_BOUND_FOR_NUM_USER_FACTORS;
 	}
 
+	public List<Rating> generateRatings(int userIndex, int numRatings) {
+		List<Rating> results = new ArrayList<Rating>(numRatings);
+		
+		int numFactors = generateNumFactors();
+		List<Function<Tuple2<Listing, Listing>, Boolean>> factors = selectFactors(numFactors);
+		
+		Listing preferredListing = generateListing(userIndex);
+		
+		int propertyId;
+		List<Integer> alreadyRatedProperties = new ArrayList<Integer>(numRatings);
+		int numSelected=0;
+		
+		if(listings == null){
+			initializeListings();
+		}
+		
+		while( numSelected < numRatings){
+			propertyId = selectAPropertyId();
+			if(!alreadyRatedProperties.contains(propertyId)){
+				numSelected++;
+				alreadyRatedProperties.add(propertyId);
+				results.add(new Rating(userIndex, propertyId, calculateRating(getListing(propertyId), preferredListing, factors)));
+			}
+		}
+		
+		return results;
+	}
+
+	protected void initializeListings() {
+		listings = new HashMap<Integer, Listing>(NUM_PROPERTIES);
+		
+		List<Listing> results = DBDispatcher.runQuery(new FullListingQuery(), new ResultSetListingParser());
+		
+		for(Listing listing: results){
+			listings.put(listing.getListing_id(), listing);
+		}
+	}
+
+	protected Listing getListing(int propertyId) {
+		return listings.get(propertyId);
+	}
 }

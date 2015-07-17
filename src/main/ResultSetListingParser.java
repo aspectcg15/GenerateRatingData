@@ -1,12 +1,8 @@
 package main;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import models.Listing;
@@ -17,93 +13,10 @@ import models.users;
 import models.longtext.longtextCastException;
 import models.varchar45.varchar45CastException;
 
-import org.apache.spark.mllib.recommendation.Rating;
+public class ResultSetListingParser implements Function<ResultSet, List<Listing>> {
 
-import api.DBAdapter;
-
-public class DBDispatcher extends DBAdapter{
-	
-	public static void dispatch(List<Rating> generatedRatings) {
-		if(generatedRatings == null) return;
-		
-		try {
-			// Register JDBC Driver
-			Class.forName(JDBC_DRIVER);
-		
-			System.out.println("Connecting to Database");
-			// Open a Connection
-			try(Connection conn = DriverManager.getConnection(DB_URL, USER, PWD);){
-				PreparedStatement prepStatement = conn.prepareStatement("INSERT INTO user_ratings (user_id, product_id, rating)"
-						+ " VALUES (?,?,?)"
-						+ " ON DUPLICATE KEY UPDATE rating=?;");
-				
-				for(Rating r: generatedRatings){
-					if(r == null) continue;
-					
-					prepStatement.setInt(1, r.user());
-					prepStatement.setInt(2, r.product());
-					prepStatement.setDouble(3, r.rating());
-					prepStatement.setDouble(4, r.rating());
-
-					System.out.println("writing "+r.user()+" "+r.product()+" "+r.rating());
-					
-					prepStatement.executeUpdate();
-				}
-			} catch (SQLException e) {
-				System.out.println(e.getMessage());
-			}
-		} catch (ClassNotFoundException e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	public static String queryForInsertRating(Rating r){
-		return "INSERT INTO user_ratings (user_id, product_id, rating)"
-				+ " VALUES ("+r.user()+","+r.product()+","+r.rating()+");";
-	}
-	
-	public static String queryForUpdateRating(Rating r){
-		return "UPDATE user_ratings "
-				+ "SET rating="+r.rating()
-				+ " WHERE user_id="+r.user()
-				+ " AND product_id="+r.product()
-				+ ";";
-	}
-	
-	public static String queryForOnDuplicateUpdate(Rating r){
-		return "INSERT INTO user_ratings (user_id, product_id, rating)"
-				+ " VALUES ("+r.user()+","+r.product()+","+r.rating()+")"
-				+ " ON DUPLICATE KEY UPDATE rating="+r.rating()+";";
-	}
-	
-	public static List<Listing> getListingFromRange(int i, int j) {
-		FullListingQuery query = new FullListingQuery("listing_id BETWEEN "+i+" AND "+j);
-		
-		List<Listing> result = runQuery(query.toString(), (a) -> { return parseListing(a);});
-		
-		return result;
-	}
-	
-	public static Listing getListing(int i){
-		
-		FullListingQuery query = new FullListingQuery("listing_id="+i);
-		
-		List<Listing> result = runQuery(query.toString(), (a) -> { return parseListing(a);});
-		
-		if(result.size() != 1){
-			return null;
-		}else{
-			return result.get(0);
-		}
-	}
-	
-	/**
-	 * Note: resultSet needs to be still open for this method to work
-	 * I suggest using as a lambda: (a) -> {return parseListing(a);}
-	 * @param resultSet
-	 * @return
-	 */
-	public static List<Listing> parseListing(ResultSet resultSet) {
+	@Override
+	public List<Listing> apply(ResultSet resultSet) {
 		if(resultSet == null){
 			return null;
 		}
@@ -294,45 +207,4 @@ public class DBDispatcher extends DBAdapter{
 		return result;
 	}
 
-	public static <T> T runQuery(FullListingQuery query, Function<ResultSet, T> parser) {
-		return runQuery(query.toString(), parser);
-	}
-	
-	public static <T> T runQuery(String query, Function<ResultSet, T> parser) {
-		T result = null;
-		try {
-			// Register JDBC Driver
-			Class.forName(JDBC_DRIVER);
-		
-			System.out.println("Connecting to Database");
-			// Open a Connection
-			try(Connection conn = DriverManager.getConnection(DB_URL, USER, PWD);){
-				PreparedStatement preparedStatement = conn.prepareStatement(query);
-				ResultSet resultSet = preparedStatement.executeQuery();
-				if(parser != null)
-					result = parser.apply(resultSet);
-			} catch (SQLException e) {
-				System.out.println(e.getMessage());
-			}
-		} catch (ClassNotFoundException e) {
-			System.out.println(e.getMessage());
-		}
-		return result;
-	}
-
-	public static class FullListingQuery {
-		private String query = "SELECT a.*, b.*, c.*, d.*, e.*, f.* FROM propertylisting a, property b, propertyphoto c, address d, users e, address f WHERE a.property_prop_id=b.prop_id AND a.propertyphoto_photo_id=c.photo_id AND b.address_zip_id1=d.zip_id AND a.users_user_id=e.user_id AND e.address_zip_id=f.zip_id";
-		
-		public FullListingQuery(){
-			query += ";";
-		}
-		
-		public FullListingQuery(String where){
-			query += " AND "+ where+ ";";
-		}
-		
-		public String toString(){
-			return query;
-		}
-	}
 }
